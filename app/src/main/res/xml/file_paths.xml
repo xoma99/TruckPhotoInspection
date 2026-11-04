@@ -1,0 +1,4 @@
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <files-path name="inspection_photos" path="inspections/"/>
+    <cache-path name="training_exports" path="exports/"/>
+</paths>
