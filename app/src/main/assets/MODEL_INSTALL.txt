@@ -1,0 +1,3 @@
+Place trained angle_classifier.tflite and labels.json in this folder.
+They are not bundled because no validated trained model exists yet.
+The app will use the experimental reference-image matcher until both files are present.
