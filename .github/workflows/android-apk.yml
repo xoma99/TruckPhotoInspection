@@ -3,11 +3,12 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - '*.zip'
+      - 'app/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
       - '.github/workflows/android-apk.yml'
 permissions:
   contents: read
-  actions: read
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,25 +20,18 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Extract project archive
-        run: |
-          ARCHIVE=$(find . -maxdepth 1 -name '*.zip' -print -quit)
-          test -n "$ARCHIVE"
-          mkdir extracted
-          unzip -q "$ARCHIVE" -d extracted
-          PROJECT_DIR=$(find extracted -mindepth 1 -maxdepth 2 -name settings.gradle.kts -printf '%h\n' | head -n 1)
-          test -n "$PROJECT_DIR"
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
       - name: Build debug APK
-        run: gradle -p "$PROJECT_DIR" assembleDebug --no-daemon
+        run: gradle assembleDebug --no-daemon --stacktrace
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TruckPhotoInspection-debug-apk
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
