@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() { override fun onCreate(savedInstanceSt
  var plate by remember { mutableStateOf("") }; var employee by remember { mutableStateOf("") }; var vehicle by remember { mutableStateOf("") }; var screen by remember { mutableStateOf("home") }
  var selectedPhoto by remember { mutableStateOf<InspectionPhoto?>(null) }
  var deleteTarget by remember { mutableStateOf<Inspection?>(null) }
- var editingInspection by remember { mutableStateOf<Inspection?>(null) } var pendingTask by remember { mutableStateOf<ShotTask?>(null) }; var cameraUri by remember { mutableStateOf<Uri?>(null) }; var cameraFile by remember { mutableStateOf<File?>(null) }
+ var editingInspection by remember { mutableStateOf<Inspection?>(null) }; var pendingTask by remember { mutableStateOf<ShotTask?>(null) }; var cameraUri by remember { mutableStateOf<Uri?>(null) }; var cameraFile by remember { mutableStateOf<File?>(null) }
  fun refresh() { scope.launch { inspections=dao.getInspections(); active?.let { photos=dao.getPhotos(it.id) } } }; LaunchedEffect(Unit) { refresh() }
  val camera= rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok -> val task=pendingTask; val ins=active; val uri=cameraUri; if(ok && task!=null && ins!=null && uri!=null) scope.launch {
     val path=cameraFile?.absolutePath ?: ""
