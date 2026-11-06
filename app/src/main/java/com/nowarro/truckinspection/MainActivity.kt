@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
@@ -176,7 +177,7 @@ class MainActivity : ComponentActivity() { override fun onCreate(savedInstanceSt
  FilledTonalButton(onClick={takePhoto(task)}) { Text(if(photo!=null) "Переснять" else "Снять") }
  if(photo!=null) TextButton(onClick={ scope.launch { File(photo.filePath).delete(); dao.deletePhoto(ins.id,task.id); photos=dao.getPhotos(ins.id) } }) { Text("Удалить фото",color=Color(0xFFB3261E)) }
 } } } } }; Button(onClick={ if(done.size==tasks.size) scope.launch { dao.updateInspection(ins.copy(completed=true)); refresh(); screen="report" } },enabled=done.size==tasks.size,modifier=Modifier.fillMaxWidth()) { Text("Завершить осмотр") } } }
- "report" -> { val ins=active; if(ins!=null) { Text("Фотоосмотр завершён",fontSize=23.sp,fontWeight=FontWeight.Bold); Text("${ins.plate} • ${photos.size} фотографий",color=Color.Gray); Spacer(Modifier.height(12.dp)); LazyColumn { items(tasks) { t -> val p=photos.find{it.taskId==t.id}; if(p!=null) Row(Modifier.fillMaxWidth().padding(6.dp).clickable { selectedPhoto=p },verticalAlignment=Alignment.CenterVertically) { AsyncImage(model=File(p.filePath),contentDescription=t.title,modifier=Modifier.size(64.dp),contentScale=ContentScale.Crop); Spacer(Modifier.width(10.dp)); Column(Modifier.weight(1f)) { Text(t.title,fontWeight=FontWeight.Medium); Text("Нажмите для просмотра",fontSize=11.sp,color=Color.Gray) }; Icon(Icons.Default.CheckCircle,color=Color(0xFF2E7D32),contentDescription=null) } } }; Text("Отчёт сохранён локально на устройстве.",color=Color.Gray) } }
+ "report" -> { val ins=active; if(ins!=null) { Text("Фотоосмотр завершён",fontSize=23.sp,fontWeight=FontWeight.Bold); Text("${ins.plate} • ${photos.size} фотографий",color=Color.Gray); Spacer(Modifier.height(12.dp)); LazyColumn { items(tasks) { t -> val p=photos.find{it.taskId==t.id}; if(p!=null) Row(Modifier.fillMaxWidth().padding(6.dp).clickable { selectedPhoto=p },verticalAlignment=Alignment.CenterVertically) { AsyncImage(model=File(p.filePath),contentDescription=t.title,modifier=Modifier.size(64.dp),contentScale=ContentScale.Crop); Spacer(Modifier.width(10.dp)); Column(Modifier.weight(1f)) { Text(t.title,fontWeight=FontWeight.Medium); Text("Нажмите для просмотра",fontSize=11.sp,color=Color.Gray) }; Icon(Icons.Default.CheckCircle,tint=Color(0xFF2E7D32),contentDescription=null) } } }; Text("Отчёт сохранён локально на устройстве.",color=Color.Gray) } }
  }
  if(selectedPhoto!=null) {
    Dialog(onDismissRequest={ selectedPhoto=null }) {
