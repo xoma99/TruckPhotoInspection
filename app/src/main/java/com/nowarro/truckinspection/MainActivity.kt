@@ -77,19 +77,71 @@ class MainActivity : ComponentActivity() { override fun onCreate(savedInstanceSt
     photos=dao.getPhotos(ins.id)
  }; pendingTask=null }
  fun takePhoto(task:ShotTask) { val ins=active ?: return; val dir=File(context.filesDir,"inspections/${ins.id}").apply { mkdirs() }; val file=File(dir,"${task.id}_${System.currentTimeMillis()}.jpg"); val values=ContentValues().apply { put(MediaStore.Images.Media.DISPLAY_NAME,file.name); put(MediaStore.Images.Media.MIME_TYPE,"image/jpeg") }; val uri=androidx.core.content.FileProvider.getUriForFile(context,"${context.packageName}.provider",file); cameraUri=uri; cameraFile=file; pendingTask=task; camera.launch(uri) }
- MaterialTheme(colorScheme=lightColorScheme(primary=Color(0xFF9E4938),secondary=Color(0xFF34383B),background=Color(0xFFF7F5F2),surface=Color.White)) {
+ MaterialTheme(colorScheme=darkColorScheme(primary=Color(0xFF1677FF),secondary=Color(0xFF69B1FF),background=Color(0xFF0B1220),surface=Color(0xFF152238),onSurface=Color(0xFFF1F5FF))) {
  Scaffold(topBar={ TopAppBar(title={ Text("Фотоосмотр ТС",fontWeight=FontWeight.Bold) }, navigationIcon={ if(screen!="home") IconButton(onClick={screen="home";active=null;refresh()}) { Icon(Icons.Default.ArrowBack,"Назад") } }) }) { pad ->
- Column(Modifier.fillMaxSize().background(Color(0xFFF7F5F2)).padding(pad).padding(16.dp)) {
+ Column(Modifier.fillMaxSize().background(Color(0xFF0B1220)).padding(pad).padding(16.dp)) {
  when(screen) {
- "home" -> { Text("Осмотры автомобилей",fontSize=23.sp,fontWeight=FontWeight.Bold); Spacer(Modifier.height(8.dp)); Text("Фотографии сохраняются на этом устройстве. Интернет не требуется.",color=Color.Gray,fontSize=14.sp); Spacer(Modifier.height(18.dp)); Button(onClick={screen="new"},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(14.dp)) { Icon(Icons.Default.Add,null); Spacer(Modifier.width(8.dp)); Text("Новый фотоосмотр") }; Spacer(Modifier.height(18.dp)); Text("История",fontWeight=FontWeight.SemiBold,fontSize=18.sp); LazyColumn { items(inspections) { item -> Card(Modifier.fillMaxWidth().padding(vertical=5.dp).clickable { active=item; scope.launch { photos=dao.getPhotos(item.id); screen="inspection" } },shape=RoundedCornerShape(14.dp)) { Column(Modifier.padding(14.dp)) {
- Text(item.plate, fontWeight=FontWeight.Bold,fontSize=18.sp)
- Text("${item.vehicle.ifBlank { "Грузовой автомобиль" }} • ${java.text.SimpleDateFormat("dd.MM.yyyy HH:mm").format(java.util.Date(item.createdAt))}",color=Color.Gray)
- Text(if(item.completed) "Завершён" else "В работе",color=Color(0xFF9E4938))
- Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-   TextButton(onClick={ plate=item.plate; employee=item.employee; vehicle=item.vehicle; editingInspection=item; screen="edit" }) { Icon(Icons.Default.Edit,null); Text("Изменить") }
-   TextButton(onClick={ deleteTarget=item }) { Icon(Icons.Default.Delete,null); Text("Удалить",color=Color(0xFFB3261E)) }
+ "home" -> {
+   Text("Панель осмотров",fontSize=26.sp,fontWeight=FontWeight.Bold,color=Color.White)
+   Text("Контроль состояния грузового транспорта",fontSize=13.sp,color=Color(0xFF9AAAC3))
+   Spacer(Modifier.height(20.dp))
+   Card(colors=CardDefaults.cardColors(containerColor=Color(0xFF152238)),shape=RoundedCornerShape(18.dp),modifier=Modifier.fillMaxWidth()) {
+     Column(Modifier.padding(18.dp)) {
+       Row(verticalAlignment=Alignment.CenterVertically) {
+         Icon(Icons.Default.LocalShipping,null,tint=Color(0xFF69B1FF),modifier=Modifier.size(32.dp))
+         Spacer(Modifier.width(12.dp))
+         Column { Text("Truck Photo Inspection",fontWeight=FontWeight.Bold,color=Color.White,fontSize=18.sp); Text("Офлайн • данные на устройстве",color=Color(0xFF9AAAC3),fontSize=12.sp) }
+       }
+       Spacer(Modifier.height(18.dp))
+       Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+         Column(Modifier.weight(1f)) { Text("${inspections.size}",fontSize=30.sp,fontWeight=FontWeight.Bold,color=Color.White); Text("Всего осмотров",fontSize=12.sp,color=Color(0xFF9AAAC3)) }
+         Column(Modifier.weight(1f)) { Text("${inspections.count { it.completed }}",fontSize=30.sp,fontWeight=FontWeight.Bold,color=Color(0xFF52C41A)); Text("Завершено",fontSize=12.sp,color=Color(0xFF9AAAC3)) }
+         Column(Modifier.weight(1f)) { Text("${inspections.count { !it.completed }}",fontSize=30.sp,fontWeight=FontWeight.Bold,color=Color(0xFFFAAD14)); Text("В работе",fontSize=12.sp,color=Color(0xFF9AAAC3)) }
+       }
+     }
+   }
+   Spacer(Modifier.height(16.dp))
+   Button(onClick={ plate="";employee="";vehicle="";screen="new" },modifier=Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(12.dp)) {
+     Icon(Icons.Default.Add,null); Spacer(Modifier.width(8.dp)); Text("Начать новый осмотр",fontWeight=FontWeight.SemiBold)
+   }
+   Spacer(Modifier.height(22.dp))
+   Row(verticalAlignment=Alignment.CenterVertically) {
+     Text("История осмотров",fontWeight=FontWeight.Bold,fontSize=19.sp,color=Color.White,modifier=Modifier.weight(1f))
+     Text("${inspections.size} записей",fontSize=12.sp,color=Color(0xFF9AAAC3))
+   }
+   Spacer(Modifier.height(8.dp))
+   if(inspections.isEmpty()) {
+     Card(colors=CardDefaults.cardColors(containerColor=Color(0xFF152238)),modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(14.dp)) {
+       Column(Modifier.padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+         Icon(Icons.Default.PhotoCamera,null,tint=Color(0xFF69B1FF),modifier=Modifier.size(36.dp))
+         Spacer(Modifier.height(8.dp))
+         Text("Осмотров пока нет",color=Color.White,fontWeight=FontWeight.SemiBold)
+         Text("Создайте первый осмотр автомобиля",color=Color(0xFF9AAAC3),fontSize=12.sp)
+       }
+     }
+   }
+   LazyColumn { items(inspections) { item ->
+     Card(Modifier.fillMaxWidth().padding(vertical=5.dp).clickable { active=item; scope.launch { photos=dao.getPhotos(item.id); screen=if(item.completed) "report" else "inspection" } },colors=CardDefaults.cardColors(containerColor=Color(0xFF152238)),shape=RoundedCornerShape(14.dp)) {
+       Column(Modifier.padding(14.dp)) {
+         Row(verticalAlignment=Alignment.CenterVertically) {
+           Icon(Icons.Default.LocalShipping,null,tint=Color(0xFF69B1FF))
+           Spacer(Modifier.width(10.dp))
+           Column(Modifier.weight(1f)) {
+             Text(item.plate,fontWeight=FontWeight.Bold,fontSize=18.sp,color=Color.White)
+             Text(item.vehicle.ifBlank { "Грузовой автомобиль" },fontSize=13.sp,color=Color(0xFF9AAAC3))
+           }
+           Text(if(item.completed) "Завершён" else "В работе",fontSize=12.sp,color=if(item.completed) Color(0xFF52C41A) else Color(0xFFFAAD14))
+         }
+         Spacer(Modifier.height(8.dp))
+         Text(java.text.SimpleDateFormat("dd.MM.yyyy HH:mm").format(java.util.Date(item.createdAt)),fontSize=12.sp,color=Color(0xFF9AAAC3))
+         Row {
+           TextButton(onClick={ plate=item.plate;employee=item.employee;vehicle=item.vehicle;editingInspection=item;screen="edit" }) { Icon(Icons.Default.Edit,null); Text("Изменить") }
+           TextButton(onClick={ deleteTarget=item }) { Icon(Icons.Default.Delete,null); Text("Удалить",color=Color(0xFFFF7875)) }
+         }
+       }
+     }
+   } }
  }
-} } } } }
  "new" -> { Text("Новый осмотр",fontSize=23.sp,fontWeight=FontWeight.Bold); Spacer(Modifier.height(16.dp)); OutlinedTextField(plate,{plate=it.uppercase()},label={Text("Государственный номер *")},modifier=Modifier.fillMaxWidth(),singleLine=true); Spacer(Modifier.height(10.dp)); OutlinedTextField(vehicle,{vehicle=it},label={Text("Марка / модель")},modifier=Modifier.fillMaxWidth(),singleLine=true); Spacer(Modifier.height(10.dp)); OutlinedTextField(employee,{employee=it},label={Text("Сотрудник *")},modifier=Modifier.fillMaxWidth(),singleLine=true); Spacer(Modifier.height(18.dp)); Button(onClick={ if(plate.isNotBlank() && employee.isNotBlank()) scope.launch { val id=dao.insertInspection(Inspection(plate=plate,employee=employee,vehicle=vehicle)); active=dao.getInspection(id); photos=emptyList(); screen="inspection"; refresh() } },enabled=plate.isNotBlank()&&employee.isNotBlank(),modifier=Modifier.fillMaxWidth()) { Text("Создать осмотр") } }
  "edit" -> { Text("Редактирование осмотра",fontSize=23.sp,fontWeight=FontWeight.Bold); Spacer(Modifier.height(16.dp)); OutlinedTextField(plate,{plate=it.uppercase()},label={Text("Государственный номер *")},modifier=Modifier.fillMaxWidth(),singleLine=true); Spacer(Modifier.height(10.dp)); OutlinedTextField(vehicle,{vehicle=it},label={Text("Марка / модель")},modifier=Modifier.fillMaxWidth(),singleLine=true); Spacer(Modifier.height(10.dp)); OutlinedTextField(employee,{employee=it},label={Text("Сотрудник *")},modifier=Modifier.fillMaxWidth(),singleLine=true); Spacer(Modifier.height(18.dp)); Button(onClick={ val old=editingInspection; if(old!=null && plate.isNotBlank() && employee.isNotBlank()) scope.launch { dao.updateInspection(old.copy(plate=plate,employee=employee,vehicle=vehicle)); active=dao.getInspection(old.id); refresh(); screen="home"; editingInspection=null } },enabled=plate.isNotBlank()&&employee.isNotBlank(),modifier=Modifier.fillMaxWidth()) { Text("Сохранить изменения") } }
  "inspection" -> { val ins=active; if(ins!=null) { Text(ins.plate,fontSize=24.sp,fontWeight=FontWeight.Bold); Text("${ins.vehicle.ifBlank { "Грузовой автомобиль" }} • ${ins.employee}",color=Color.Gray); Spacer(Modifier.height(12.dp)); val done=photos.filter{(it.qualityPassed || it.manuallyApproved) && (it.angleReliable && it.detectedTaskId == it.taskId || it.angleManuallyApproved)}.map{it.taskId}.toSet(); LinearProgressIndicator(progress={done.size.toFloat()/tasks.size},modifier=Modifier.fillMaxWidth()); Text("Принято ${done.size} из ${tasks.size} обязательных ракурсов. Снимки с замечаниями нужно переснять или подтвердить вручную.",fontSize=12.sp,color=Color.Gray); Spacer(Modifier.height(12.dp)); LazyColumn(Modifier.weight(1f)) { items(tasks) { task -> val photo=photos.find{it.taskId==task.id}; Card(Modifier.fillMaxWidth().padding(vertical=4.dp),shape=RoundedCornerShape(12.dp)) { Row(Modifier.padding(10.dp),verticalAlignment=Alignment.CenterVertically) { AsyncImage(model="file:///android_asset/reference_photos/${task.samples.first()}",contentDescription=null,modifier=Modifier.size(74.dp),contentScale=ContentScale.Crop); Column(Modifier.weight(1f).padding(horizontal=10.dp)) { Text(task.title,fontWeight=FontWeight.SemiBold); Text(task.hint,fontSize=12.sp,color=Color.Gray); Text(
